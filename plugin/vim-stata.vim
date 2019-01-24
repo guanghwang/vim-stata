@@ -1,54 +1,14 @@
-
 " Vim to Stata  
 "==============================================================================
 "Script Description: Run selected do-file in Stata from Vim
-"Script Platform: Linux and Stata 12,13,14
-"Script Version: 1.0.2 Beta
-"Last Edited: 2nd December 2015
-"Authors: Zizhong Yan (coding) & Chuhong Wang (testing & debugging)
-"Contacts: helloyzz@gmail.com
-"Configurations:
-"		1, Installation
-"               1.1. Put "vim2stata.vim"(this file) to dir vimfiles/plugin or vim74/plugin
-"               2.2. use Vim Pathogen or Vundle plugin to install it from git repository. 
-"       2, To ensure that the do-files are opened in the Stata by default and hence are executed
-"          directly, we need to make the following two changes.
-"               2.1. Uncheck the "Edit do-files opened from the Finder in Do-file Editor"
-"                       in Preference>General Preference>Windows>Do-file Editor>Advanced
-"                       (Stata 13/14), or Preferences > Do-file Editor > Advanced (Stata 12).
-"               2.2. Ensure the do-files are opened in the Stata by default. If it is not,
-"               please:
-"                        Right click on any do-file under Finder > Open With > Select Stata from
-"                        Applications folder > check "Always Open With" > Open.
-"       3, Hotkey binding (optional)
-"          The hotkey for executing selected codes is set to be F9.
-"          Please note that you could customise your hotkey by adding a sentence to your .vimrc
-"          or vimrc, for example:
-"               :vmap <C-S-x> :<C-U>call RunDoLines()<CR><CR>
-"          Then the hotkey would be changed to Ctrl+Shift+X
-"       4, Restart the Vim and click F9 or the customised hotkey to run the
-"          selected codes.
-"Background information:
-"       1, This plugin is motivated by the article "Some notes on text editors for Stata
-"          users"  (http://fmwww.bc.edu/repec/bocode/t/textEditors.html#vim).
-"          This plugin basically creates a temporary do-file, which is then sent to the 
-"		   Stata to execute.
-"          The Stata13+ has introduced the AppleScript commands (i.e. DoCommand and 
-"		   DoCommandAsync) which allows script commands to directly enter the Stata without
-"		   creating any temporary file. However, we did not consider this option for two 
-"		   reasons:
-"			i) AppleScript commands will go through all selected commands anyways even if 
-"			the Stata has already reported an error message. This behaves quite differently
-"			from the Stata in-built do-file editor and could probably cause mistakes.
-"			ii) AppleScript commands sometimes do not work properly based on our own experience 
-"			and tests, though we have not figured out the reason so far. Therefore we believe that 
-"			creating a temporary do-file would be safer and more reliable and it behaves exactly 
-"			the same as what the in-built do-file editor does. The temp file is harmless since it 
-"			has just been temporarily saved in a cache folders in the OS X.
-"       2, For Windows users, please follow the instructions in the webpage above.
-"       3, This plugin has been tested on Mac OS X Yosemite and El Capitan and supports 
-"          Stata 12-14SE/MP/IC. (It should also work well with Stata 11, but has not been formally 
-"          tested)
+"Script Platform: Linux and Stata 14, 15
+"Script Version: 0.01
+"Last Edited: Jan 24, 2019
+"Authors:  Guanghua Wang
+"Notes:
+"   1. This plugin is motivated by zizhongyan/vim-stata and kylebarron/stata-exec
+"   2. This plugin only workers on Linux.
+"   3. `xdotool` and `xclip` are needed for this plugin to work
 "==============================================================================
 
 fun! RunDoLines()
@@ -64,11 +24,42 @@ python3 << EOF
 import vim
 import sys
 import os  
+with open('/tmp/stata-exec_code', 'r') as file:
+  filedata = file.read()
+
+# Replace the target string
+import re
+# The original regex is from kylebarron/stata-exec
+# modified for python3
+# break down of regex
+# first part:keep
+# (([\"\'])(?:\\[\s\s]|.)*?\2|(?:[^\w\s]|^)\s*/(?![*/])(?:\\.|\[(?:\\.|.)\]|.)*?/(?=[gmiy]{0,4}\s*(?![*/])(?:\w|$))
+# part a
+# ([\"\'])(?:\\[\s\s]|.)*?\2
+# part b
+# (?:[^\w\s]|^)\s*/(?![*/])(?:\\.
+# part c
+# \[(?:\\.|.)\]|.)*?/(?=[gmiy]{0,4}\s*(?![*/])(?:\w|$)
+# second to fourth part: remove
+# ///.*?\r?\n\s*
+# remove default delimiter ///
+# //.*?[$\n]
+# remove inline comments
+# /\*[\s\s]*?\*/
+# remove block comments
+filedata = re.sub(
+        r"(([\"\'])(?:\\[\s\s]|.)*?\2|(?:[^\w\s]|^)\s*/(?![*/])(?:\\.|\[(?:\\.|.)\]|.)*?/(?=[gmiy]{0,4}\s*(?![*/])(?:\w|$)))|///.*?\r?\n\s*|//.*?[$\n]|/\*[\s\s]*?\*/", 
+        r"\1",
+        filedata
+        )
+with open('/tmp/stata-exec_code', 'w') as file:
+  file.write(filedata)
+# send codes to stata
 def run_yan():
     cmd = ("""
            old_cb="$(xclip -o -selection clipboard)";
            this_window="$(xdotool getactivewindow)" &&
-           stata_window="$(xdotool search --name --limit 1 "Stata/(IC|SE|MP)? 1[0-9]\.[0-9]")" &&
+           stata_window="$(xdotool search --name --limit 1 "stata/(ic|se|mp)? 1[0-9]\.[0-9]")" &&
            cat /tmp/stata-exec_code | xclip -i -selection clipboard &&
            xdotool \
              keyup ctrl shift \

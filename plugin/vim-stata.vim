@@ -2,7 +2,7 @@
 " Vim to Stata  
 "==============================================================================
 "Script Description: Run selected do-file in Stata from Vim
-"Script Platform: OS X and Stata 12,13,14
+"Script Platform: Linux and Stata 12,13,14
 "Script Version: 1.0.2 Beta
 "Last Edited: 2nd December 2015
 "Authors: Zizhong Yan (coding) & Chuhong Wang (testing & debugging)
@@ -51,8 +51,6 @@
 "          tested)
 "==============================================================================
 
-
- 
 fun! RunDoLines()
 let selectedLines = getbufline('%', line("'<"), line("'>"))
 if col("'>") < strlen(getline(line("'>")))
@@ -61,17 +59,26 @@ endif
 if col("'<") != 1
 let selectedLines[0] = strpart(selectedLines[0], col("'<")-1)
 endif
-let temp_dofile = tempname() . ".do"  
-call writefile(selectedLines, temp_dofile)
-python << EOF
+call writefile(selectedLines, "/tmp/stata-exec_code")
+python3 << EOF
 import vim
 import sys
 import os  
-def run_yan(): 
-    temp_dofile = vim.eval("temp_dofile")
-    print(temp_dofile)  
-    cmd = """osascript -e 'tell application "Finder" to open POSIX file "{0}"' -e 'tell application "{1}" to activate' &""".format(temp_dofile, "MacVim") 
-    os.system(cmd) 
+def run_yan():
+    cmd = ("""
+           old_cb="$(xclip -o -selection clipboard)";
+           this_window="$(xdotool getactivewindow)" &&
+           stata_window="$(xdotool search --name --limit 1 "Stata/(IC|SE|MP)? 1[0-9]\.[0-9]")" &&
+           cat /tmp/stata-exec_code | xclip -i -selection clipboard &&
+           xdotool \
+             keyup ctrl shift \
+             windowactivate --sync $stata_window \
+             key --clearmodifiers --delay 100 ctrl+v Return \
+             windowactivate --sync $this_window;
+           printf "$old_cb" | xclip -i -selection clipboard
+           """
+           )
+    os.system(cmd)
 run_yan()
 EOF
 endfun

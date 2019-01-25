@@ -24,34 +24,15 @@ python3 << EOF
 import vim
 import sys
 import os  
+import re
 with open('/tmp/stata-exec_code', 'r') as file:
   filedata = file.read()
-
-# Replace the target string
-import re
-# The original regex is from kylebarron/stata-exec
-# modified for python3
-# break down of regex
-# first part:keep
-# (([\"\'])(?:\\[\s\s]|.)*?\2|(?:[^\w\s]|^)\s*/(?![*/])(?:\\.|\[(?:\\.|.)\]|.)*?/(?=[gmiy]{0,4}\s*(?![*/])(?:\w|$))
-# part a
-# ([\"\'])(?:\\[\s\s]|.)*?\2
-# part b
-# (?:[^\w\s]|^)\s*/(?![*/])(?:\\.
-# part c
-# \[(?:\\.|.)\]|.)*?/(?=[gmiy]{0,4}\s*(?![*/])(?:\w|$)
-# second to fourth part: remove
-# ///.*?\r?\n\s*
-# remove default delimiter ///
-# //.*?[$\n]
-# remove inline comments
-# /\*[\s\s]*?\*/
-# remove block comments
-filedata = re.sub(
-        r"(([\"\'])(?:\\[\s\s]|.)*?\2|(?:[^\w\s]|^)\s*/(?![*/])(?:\\.|\[(?:\\.|.)\]|.)*?/(?=[gmiy]{0,4}\s*(?![*/])(?:\w|$)))|///.*?\r?\n\s*|//.*?[$\n]|/\*[\s\s]*?\*/", 
-        r"\1",
-        filedata
-        )
+# 1. remove /*    */
+filedata = re.sub(r'\/\*[\s\S]*?\*\/', r"", filedata)
+# 2. remove //coments
+filedata = re.sub(r'\/\/.*?(\r\n|\r|\n)', r"", filedata)
+# 3. remove ///
+filedata = re.sub(r'\/\/\/.*?(\r\n|\r|\n)', r"", filedata)
 with open('/tmp/stata-exec_code', 'w') as file:
   file.write(filedata)
 # send codes to stata

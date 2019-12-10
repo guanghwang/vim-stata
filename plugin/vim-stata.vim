@@ -23,7 +23,7 @@ call writefile(selectedLines, "/tmp/stata-exec_code")
 python3 << EOF
 import vim
 import sys
-import os  
+import os
 import re
 with open('/tmp/stata-exec_code', 'r') as file:
   filedata = file.read()
@@ -40,12 +40,12 @@ with open('/tmp/stata-exec_code', 'w') as file:
 def run_yan():
     cmd = ("""
            wl-copy -c &&
-           cat /tmp/stata-exec_code | wl-copy -o &&
-           wl-i -selection clipboard &&
-           swaymsg '[title="[Ss]tata.*"] focus' &&
+           cat /tmp/stata-exec_code | wl-copy &&
+           swaymsg '[app_id="[Ss]tata.*"] focus' &&
            xdotool \
              key --clearmodifiers --delay 100 ctrl+v Return &&
-           swaymsg '[title="termite" workspace=5] focus'
+           swaymsg '[title="termite" workspace=5] focus' &&
+           wl-copy -c
            """
            )
     os.system(cmd)

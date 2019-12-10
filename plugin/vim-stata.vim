@@ -41,10 +41,10 @@ def run_yan():
     cmd = ("""
            wl-copy -c &&
            cat /tmp/stata-exec_code | wl-copy &&
-           swaymsg '[app_id="[Ss]tata.*"] focus' &&
+           swaymsg '[title="[Ss]tata.*"] focus' &&
            xdotool \
              key --clearmodifiers --delay 100 ctrl+v Return &&
-           swaymsg '[title="termite" workspace=5] focus' &&
+           swaymsg '[app_id="termite" workspace=5] focus' &&
            wl-copy -c
            """
            )

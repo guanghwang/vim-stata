@@ -7,6 +7,7 @@ For `junegunn/vim-plug` users, add
 ```
 Plug 'guanghwang/vim-stata', { 'branch': 'linux', 'for': 'stata'}  "stata exec
 ```
+to `.vimrc`
 
 Also,` xdotool` and `xclip` are needed for this plugin to work.
 

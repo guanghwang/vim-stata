@@ -36,18 +36,16 @@ filedata = re.sub(r'\/\/\/.*?(\r\n|\r|\n)', r"", filedata)
 with open('/tmp/stata-exec_code', 'w') as file:
   file.write(filedata)
 # send codes to stata
+# sway version hardcoded
 def run_yan():
     cmd = ("""
-           old_cb="$(xclip -o -selection clipboard)";
-           this_window="$(xdotool getactivewindow)" &&
-           stata_window="$(xdotool search --name --limit 1 "stata/(ic|se|mp)? 1[0-9]\.[0-9]")" &&
-           cat /tmp/stata-exec_code | xclip -i -selection clipboard &&
+           wl-copy -c &&
+           cat /tmp/stata-exec_code | wl-copy -o &&
+           wl-i -selection clipboard &&
+           swaymsg '[title="[Ss]tata.*"] focus' &&
            xdotool \
-             keyup ctrl shift \
-             windowactivate --sync $stata_window \
-             key --clearmodifiers --delay 100 ctrl+v Return \
-             windowactivate --sync $this_window;
-           printf "$old_cb" | xclip -i -selection clipboard
+             key --clearmodifiers --delay 100 ctrl+v Return &&
+           swaymsg '[title="termite" workspace=5] focus'
            """
            )
     os.system(cmd)
@@ -58,4 +56,3 @@ endfun
 noremap  <Plug>(RunDoLines)            :<C-U>call RunDoLines()<CR><CR>
 map  <buffer> <silent> <F9>          <Plug>(RunDoLines)
 "command! Vim2StataToggle call RunDoLines()<CR><CR>
- 

@@ -26,7 +26,7 @@ import sys
 import os
 import re
 with open('/tmp/stata-exec_code', 'r') as file:
-  filedata = file.read()
+    filedata = file.read()
 # 1. remove /*    */
 filedata = re.sub(r'\/\*[\s\S]*?\*\/', r"", filedata)
 # 2. remove //coments
@@ -34,7 +34,7 @@ filedata = re.sub(r'\/\/.*?(\r\n|\r|\n)', r"", filedata)
 # 3. remove ///
 filedata = re.sub(r'\/\/\/.*?(\r\n|\r|\n)', r"", filedata)
 with open('/tmp/stata-exec_code', 'w') as file:
-  file.write(filedata)
+    file.write(filedata)
 # send codes to stata
 # sway version hardcoded
 def run_yan():

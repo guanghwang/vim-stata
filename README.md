@@ -7,9 +7,10 @@ For `junegunn/vim-plug` users, add
 ```
 Plug 'guanghwang/vim-stata', { 'branch': 'linux', 'for': 'stata'}  "stata exec
 ```
+
 to `.vimrc`
 
-For `swaywm` user, try the sway branch, it is hard-coded to app_id termite and workspace 5. Feel free to modify the code.
+For `swaywm` user, try the sway branch, it identify editor window by the focused app_id and focused workspace. Feel free to modify the code.
 
 ```
 Plug 'guanghwang/vim-stata', { 'branch': 'sway', 'for': 'stata'}  "stata exec

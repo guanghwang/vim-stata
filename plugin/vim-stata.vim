@@ -59,5 +59,5 @@ EOF
 endfun
 
 noremap  <Plug>(RunDoLines)            :<C-U>call RunDoLines()<CR><CR>
-map  <buffer> <silent> <F9>          <Plug>(RunDoLines)
+map  <buffer> <silent> <leader>l          <Plug>(RunDoLines)
 "command! Vim2StataToggle call RunDoLines()<CR><CR>
